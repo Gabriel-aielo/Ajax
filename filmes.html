@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+    <head lang="pt-br">
+        <title>Catálogo de filmes</title>
+        <meta charset="utf-8">
+
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        
+        <script src="xmltojson.js">
+
+        </script>
+
+        <script>
+            function getfilmes(url){
+
+                document.getElementById('lista').innerHTML = ''; //restaura a div "lista" a cada evento onclick
+
+                let xmlhttp = new XMLHttpRequest(); //1
+                xmlhttp.open('GET', url); // 2
+
+                xmlhttp.onreadystatechange = function() { //3
+
+                    if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
+                        let XMLfilmes = xmlhttp.responseText;
+                        //console.log(XMLfilmes);
+
+                        let parser = new DOMParser();                                       //Conversão para arvores de elementos.
+                                                                                            //                                   .
+                        let domfilmes = parser.parseFromString(XMLfilmes, 'text/xml'); //nec//                                   .   
+                                                                                            //                                   .
+                        //console.log(domfilmes);                                             //                                   .
+//--------------------------------------------------------------------------------------------------------------------------------
+
+                        let jasonFilmes = xmlToJson(domfilmes); //conversão da árvore de elementos para json
+
+                        //console.log(jasonFilmes);
+
+                        for(let i in jasonFilmes['filmes']['filme']){
+
+                            let armazenaVariaveis = jasonFilmes['filmes']['filme'][i];
+                            console.log(armazenaVariaveis);
+
+                            let divRow = document.createElement('div');
+                            divRow.className = 'row';
+
+                            let divCol = document.createElement('col');
+                            divCol.className = 'col';
+
+                            let p1 = document.createElement('p');
+                            p1.innerHTML = '<strong>Título: </strong>' + armazenaVariaveis['titulo']['#text'];
+
+                            let p2 = document.createElement('p');
+                            p2.innerHTML = '<strong>Resumo: </strong>' + armazenaVariaveis['resumo']['#text'];
+
+                            let genero = '';
+                            for(let g in armazenaVariaveis.genero){
+                                if(genero){ genero += ', '};
+                                genero += armazenaVariaveis.genero[g]['#text'];
+                            
+                            }
+
+
+                            let elenco = '';
+
+                            for(let e in armazenaVariaveis.elenco.ator){
+                                if(elenco){ elenco += ', '};
+                                elenco += armazenaVariaveis.elenco.ator[e]['#text'];
+                            }
+
+                            let p3 = document.createElement('p');
+                            p3.innerHTML = '<strong>Gênero: </strong>' + genero;
+
+                            let p4 = document.createElement('p');
+                            p4.innerHTML = '<strong>Elenco:</strong>' + elenco;
+
+                            let p5 = document.createElement('p');
+                            p5.innerHTML = '<strong>Data de lançamento: </strong>' + armazenaVariaveis['dataLancamento']['#text'] + ', ' + armazenaVariaveis['dataLancamento']['@attributes']['pais'];
+
+                            let hr = document.createElement('hr');
+                            hr.innerHTML = '<hr>';
+
+                            divRow.appendChild(divCol);
+                            divRow.appendChild(p1);
+                            divRow.appendChild(p2);
+                            divRow.appendChild(p3);
+                            divRow.appendChild(p4);
+                            divRow.appendChild(p5);
+                            divRow.appendChild(hr);
+
+                            document.getElementById('lista').appendChild(divRow);    
+                        }
+
+                    }else if(xmlhttp.readyState == 4 && xmlhttp.status == 404){
+
+                        console.log('Arquivo não encontrado');
+                    }
+                }
+                
+                xmlhttp.send(); //4
+            } 
+        </script>
+    </head>
+
+    <body>
+        <nav class="navbar navbar-light bg-light mb-4">
+            <div class="container">
+                <div class="navbar-brand mb-0 h1">
+                    <h3>Catálogo de filmes</h3>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col">
+                    <div id="button"><a href="#" class="btn btn-success" onclick="getfilmes('http://localhost/ajax/filmes.xml')">Acessar filmes</a></div>
+                </div>
+            </div>
+
+            <div class="row d-flex justify-content-start">
+                <div id="lista">
+                    
+                </div>
+            </div>
+        
+        
+        </div>
+    </body>
+</html>
